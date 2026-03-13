@@ -19,7 +19,8 @@ router.post('/register', async (req, res) => {
   const user = new userModel({
     username,
     email,
-    password: hashedPassword
+    password: hashedPassword,
+    isRegistrationComplete: false
   });
   const token = jwt.sign(
     { email, id: user._id },
@@ -34,7 +35,20 @@ router.post('/register', async (req, res) => {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000
   });
-  res.status(201).json({ success: true });
+  res.status(201).json({ success: true, isRegistrationComplete: false });
+});
+
+router.post('/complete-profile', isLoggedIn, async (req, res) => {
+  const { role, details } = req.body;
+  const user = await userModel.findById(req.user.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  user.role = role;
+  user.details = details;
+  user.isRegistrationComplete = true;
+  await user.save();
+
+  res.json({ success: true, role: user.role });
 });
 
 
@@ -68,7 +82,11 @@ router.post('/login', async (req, res) => {
   // Send login email
   sendLoginEmail(user.email, user.username);
 
-  res.status(201).json({ success: true });
+  res.status(201).json({ 
+    success: true, 
+    isRegistrationComplete: user.isRegistrationComplete,
+    role: user.role 
+  });
 });
 
 //google login
@@ -91,7 +109,23 @@ router.get(
       maxAge: 1000 * 60 * 60 * 24
     });
 
-    res.redirect("http://localhost:5173/home");
+    if (!req.user.isRegistrationComplete) {
+      res.redirect("http://localhost:5173/register");
+    } else {
+      // Redirect based on role
+      const role = req.user.role;
+      const dashboardMap = {
+        'student': '/dashboard/student',
+        'faculty': '/dashboard/faculty',
+        'counselor': '/dashboard/counselor',
+        'hod': '/dashboard/hod',
+        'librarian': '/dashboard/librarian',
+        'lab_technician': '/dashboard/lab-technician',
+        'hostel_management': '/dashboard/hostel',
+        'admin': '/dashboard/admin'
+      };
+      res.redirect(`http://localhost:5173${dashboardMap[role] || '/home'}`);
+    }
   }
 );
 

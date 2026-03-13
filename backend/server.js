@@ -8,6 +8,8 @@ const passport = require("passport");
 require("./config/passport");
 const authRoutes = require('./routes/authRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const facultyRoutes = require('./routes/facultyRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 // app.use(cors());
@@ -23,6 +25,8 @@ app.use(passport.initialize());
 
 app.use("/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/faculty", facultyRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 
 

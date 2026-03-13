@@ -24,7 +24,8 @@ passport.use(
             username: profile.displayName,
             email,
             authProvider: "google",
-            password: null
+            password: null,
+            isRegistrationComplete: false
           });
           // Send welcome email for new Google user
           sendWelcomeEmail(email, profile.displayName);
@@ -38,7 +39,11 @@ passport.use(
           JWT_SECRET
         );
 
-        done(null, { token });
+        done(null, { 
+          token, 
+          isRegistrationComplete: user.isRegistrationComplete,
+          role: user.role 
+        });
       } catch (err) {
         done(err, null);
       }

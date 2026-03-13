@@ -1,32 +1,55 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(`mongodb://127.0.0.1:27017/auth_cgpt`);
+mongoose.connect(`mongodb://127.0.0.1:27017/srit-hackathon`);
 
 const userSchema = mongoose.Schema({
     username: String,
     email: String,
-    password:String,
+    password: String,
     role: {
-        type:String,
-        enum:['user','admin'],
-        default:'user'
+        type: String,
+        enum: ['student', 'faculty', 'counselor', 'hod', 'librarian', 'lab_technician', 'hostel_management', 'admin'],
+        default: 'student'
+    },
+    details: {
+        type: Object,
+        default: {}
+    },
+    isRegistrationComplete: {
+        type: Boolean,
+        default: false
+    },
+    authProvider: {
+        type: String,
+        default: "local"
     },
     createdAt: {
-        type:Date,
-        default:Date.now
+        type: Date,
+        default: Date.now
     },
     posts: [
         {
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'post'
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'post'
         }
     ],
     profilepic: {
-        type:String,
+        type: String,
         default: "default.jpg"
+    },
+    // Counseling/Faculty-Student Relationship
+    counselees: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'user'
+        }
+    ],
+    assignedCounselor: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
     }
 });
 
-const userModel = mongoose.model("user",userSchema);
+const userModel = mongoose.model("user", userSchema);
 
 module.exports = userModel;

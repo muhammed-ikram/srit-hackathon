@@ -80,17 +80,17 @@ const getWelcomeTemplate = (username) => `
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">ShikshaCare</div>
+            <div class="logo">CampusGuardian AI</div>
             <h1>Welcome to the Family, ${username}!</h1>
         </div>
         <div class="content">
-            <p>We're absolutely thrilled to have you join our community. ShikshaCare is more than just a platform; it's a place where you can grow, share, and connect.</p>
+            <p>We're absolutely thrilled to have you join our community. CampusGuardian AI is more than just a platform; it's a place where you can grow, share, and connect.</p>
             <a href="http://localhost:5173/home" class="button">Go to Dashboard</a>
             <div class="divider"></div>
             <p style="font-size: 14px;">If you have any questions, feel free to reply to this email. Our team is always here to help!</p>
         </div>
         <div class="footer">
-            &copy; 2026 ShikshaCare Inc. All rights reserved.<br>
+            &copy; 2026 CampusGuardian AI Inc. All rights reserved.<br>
             Designed with love for our amazing users.
         </div>
     </div>
@@ -180,16 +180,16 @@ const getLoginTemplate = (username) => `
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">ShikshaCare</div>
+            <div class="logo">CampusGuardian AI</div>
             <h1>Welcome back, ${username}!</h1>
         </div>
         <div class="content">
-            <p>You've successfully logged into your account. We're glad to see you again! Explore what's new on ShikshaCare today.</p>
+            <p>You've successfully logged into your account. We're glad to see you again! Explore what's new on CampusGuardian AI today.</p>
             <a href="http://localhost:5173/home" class="button">Go to Dashboard</a>
             <p class="security-note">If this wasn't you, please secure your account immediately or contact our support.</p>
         </div>
         <div class="footer">
-            &copy; 2026 ShikshaCare Inc. All rights reserved.<br>
+            &copy; 2026 CampusGuardian AI Inc. All rights reserved.<br>
             Secure and simple authentication.
         </div>
     </div>

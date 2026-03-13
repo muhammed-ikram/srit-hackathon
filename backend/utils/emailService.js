@@ -12,9 +12,9 @@ const transporter = nodemailer.createTransport({
 const sendWelcomeEmail = async (email, username) => {
     try {
         const mailOptions = {
-            from: `"ShikshaCare" <${process.env.EMAIL}>`,
+            from: `"CampusGuardian AI" <${process.env.EMAIL}>`,
             to: email,
-            subject: 'Welcome to ShikshaCare!',
+            subject: 'Welcome to CampusGuardian AI!',
             html: getWelcomeTemplate(username)
         };
 
@@ -30,9 +30,9 @@ const sendWelcomeEmail = async (email, username) => {
 const sendLoginEmail = async (email, username) => {
     try {
         const mailOptions = {
-            from: `"ShikshaCare" <${process.env.EMAIL}>`,
+            from: `"CampusGuardian AI" <${process.env.EMAIL}>`,
             to: email,
-            subject: 'New Login to ShikshaCare',
+            subject: 'New Login to CampusGuardian AI',
             html: getLoginTemplate(username)
         };
 
