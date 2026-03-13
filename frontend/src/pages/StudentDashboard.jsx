@@ -10,6 +10,7 @@ import DashboardNavbar from "../components/DashboardNavbar";
 import ResourceHub from "../components/ResourceHub";
 import StressAssessment from "../components/StressAssessment";
 import StressReport from "../components/StressReport";
+import StressChart from "../components/StressChart";
 
 const TIER_COLORS = {
   'Minimal Stress': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
@@ -189,7 +190,12 @@ export default function StudentDashboard() {
 
               {/* Latest result (just submitted) */}
               {assessmentResult && (
-                <StressReport avg={assessmentResult.avg} answers={assessmentResult.answers} onRetake={handleRetake} />
+                <>
+                  {reportHistory.length > 0 && (
+                    <StressChart reports={reportHistory} />
+                  )}
+                  <StressReport avg={assessmentResult.avg} answers={assessmentResult.answers} onRetake={handleRetake} />
+                </>
               )}
 
               {/* History section */}
@@ -207,6 +213,30 @@ export default function StudentDashboard() {
 
                   {historyLoading ? (
                     <div className="text-center py-24 font-black text-slate-600 tracking-widest animate-pulse uppercase">Loading history...</div>
+                  ) : reportHistory.length > 1 ? (
+                    <>
+                      <StressChart reports={reportHistory} />
+                      <div className="space-y-4">
+                        {reportHistory.map((r, idx) => (
+                          <motion.div key={r._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}
+                            className="flex items-center justify-between p-7 bg-white/[0.03] border border-white/10 rounded-[2rem] hover:border-indigo-500/30 transition-all">
+                            <div className="flex items-center gap-5">
+                              <div className="text-4xl">{r.score >= 4 ? '⛈️' : r.score >= 3 ? '🌧️' : r.score >= 2 ? '🌤️' : '🌿'}</div>
+                              <div>
+                                <div className="font-black text-white text-xl">{r.score.toFixed(1)} / 5.0</div>
+                                <div className="text-slate-500 text-sm mt-0.5">{new Date(r.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                              </div>
+                            </div>
+                            <span className={`px-4 py-1.5 rounded-full border text-xs font-black uppercase tracking-widest ${TIER_COLORS[r.tier] || 'text-slate-400'}`}>
+                              {r.tier}
+                            </span>
+                          </motion.div>
+                        ))}
+                      </div>
+                      <button onClick={() => setActiveTab("assessment")} className="flex items-center gap-3 px-8 py-4 mt-4 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-black text-white transition-all w-fit">
+                        <Brain size={18} /> Take New Assessment
+                      </button>
+                    </>
                   ) : reportHistory.length === 0 ? (
                     <div className="text-center py-40 space-y-6">
                       <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-[2rem] mx-auto flex items-center justify-center">
