@@ -34,6 +34,11 @@ export default function StudentDashboard() {
   const [reportHistory, setReportHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  // Academics state
+  const [attendance, setAttendance] = useState(user?.details?.attendance || 100);
+  const [backlogs, setBacklogs] = useState(user?.details?.backlogs || 0);
+  const [isUpdatingAcademics, setIsUpdatingAcademics] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !user) navigate("/");
   }, [user, authLoading, navigate]);
@@ -86,6 +91,29 @@ export default function StudentDashboard() {
   const handleRetake = () => {
     setAssessmentResult(null);
     setActiveTab("assessment");
+  };
+
+  const updateAcademics = async () => {
+    setIsUpdatingAcademics(true);
+    try {
+      const res = await api.post('/api/student/update-academics', { 
+        attendance: Number(attendance), 
+        backlogs: Number(backlogs) 
+      });
+      if (res.data.success) {
+        toast.success("Academic details synced successfully");
+        if (res.data.aiAssessment) {
+           const lv = res.data.aiAssessment.riskLevel;
+           if (lv === "High" || lv === "Severe") {
+               toast("⚠️ High Risk detected. Your faculty has been notified.", { icon: "🚨" });
+           }
+        }
+      }
+    } catch(err) {
+      toast.error("Failed to update academics");
+    } finally {
+      setIsUpdatingAcademics(false);
+    }
   };
 
   if (authLoading) {
@@ -164,6 +192,49 @@ export default function StudentDashboard() {
                   ))}
                 </div>
               )}
+
+              {/* Academics Section for AI Risk Assessment */}
+              <div className="mt-16 p-8 bg-white/[0.02] border border-white/10 rounded-[2.5rem]">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-3 bg-indigo-500/20 rounded-xl">
+                    <TrendingUp size={24} className="text-indigo-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-black">Academic Synchronization</h2>
+                    <p className="text-slate-500 text-sm">Simulate University SIS integration for AI Risk Assessment</p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                   <div>
+                     <label className="block text-sm font-black text-slate-400 mb-2 uppercase tracking-widest">Attendance %</label>
+                     <input 
+                       type="number" min="0" max="100" 
+                       value={attendance} onChange={e => setAttendance(e.target.value)}
+                       className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xl font-bold text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                     />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-black text-slate-400 mb-2 uppercase tracking-widest">Active Backlogs</label>
+                     <input 
+                       type="number" min="0" max="20" 
+                       value={backlogs} onChange={e => setBacklogs(e.target.value)}
+                       className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xl font-bold text-white focus:outline-none focus:border-rose-500 transition-colors"
+                     />
+                   </div>
+                </div>
+                
+                <button 
+                  onClick={updateAcademics} disabled={isUpdatingAcademics}
+                  className="mt-8 flex items-center gap-3 px-8 py-4 bg-white hover:bg-slate-200 text-black font-black rounded-2xl transition-all w-full md:w-auto"
+                >
+                  {isUpdatingAcademics ? (
+                    <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  ) : <Activity size={20} />}
+                  {isUpdatingAcademics ? 'Syncing...' : 'Sync & Run Assessment'}
+                </button>
+              </div>
+
             </motion.div>
           )}
 

@@ -13,6 +13,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
 const stressReportRoutes = require('./routes/stressReportRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 
 const app = express();
 // app.use(cors());
@@ -33,6 +34,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/stress-reports", stressReportRoutes);
+app.use("/api/student", studentRoutes);
 
 
 

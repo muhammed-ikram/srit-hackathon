@@ -3,7 +3,7 @@ import api from "../api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, UserPlus, Search, AlertCircle, CheckCircle2, MessageSquare,
-  Globe, Brain, X, Phone, Hash, TrendingUp, Calendar, ChevronRight
+  Globe, Brain, X, Phone, Hash, TrendingUp, Calendar, ChevronRight, Bell
 } from "lucide-react";
 import { AuthContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
@@ -50,6 +50,8 @@ function StudentDetailModal({ student, onClose }) {
   const rollNumber = student.details?.rollNumber || student.details?.roll || 'N/A';
   const mobile = student.details?.mobile || student.details?.phone || 'N/A';
   const department = student.details?.department || student.details?.branch || 'N/A';
+  const attendance = student.details?.attendance;
+  const backlogs = student.details?.backlogs;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -100,6 +102,39 @@ function StudentDetailModal({ student, onClose }) {
                 <Users size={12} /> Department
               </div>
               <div className="font-black text-white text-lg">{department}</div>
+            </div>
+          </div>
+
+          {/* Academic Info Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${attendance < 75 ? 'bg-rose-500/10 text-rose-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
+                  <Globe size={18} />
+                </div>
+                <div>
+                  <div className="font-bold text-white">Attendance</div>
+                  <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">University Sync</div>
+                </div>
+              </div>
+              <div className={`font-black text-2xl ${attendance < 75 ? 'text-rose-400' : 'text-white'}`}>
+                {attendance !== undefined ? `${attendance}%` : 'N/A'}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${backlogs > 0 ? 'bg-rose-500/10 text-rose-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
+                  <AlertCircle size={18} />
+                </div>
+                <div>
+                  <div className="font-bold text-white">Active Backlogs</div>
+                  <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">Failed Subjects</div>
+                </div>
+              </div>
+              <div className={`font-black text-2xl ${backlogs > 0 ? 'text-rose-400' : 'text-white'}`}>
+                {backlogs !== undefined ? backlogs : 'N/A'}
+              </div>
             </div>
           </div>
 
@@ -157,6 +192,11 @@ export default function FacultyDashboard() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
 
+  // Notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [activeNotificationCategory, setActiveNotificationCategory] = useState("all");
+
   // Stress summary
   const [stressSummary, setStressSummary] = useState([]);
   const [stressLoading, setStressLoading] = useState(false);
@@ -173,6 +213,7 @@ export default function FacultyDashboard() {
 
   useEffect(() => {
     if (activeTab === "stress") fetchStressSummary();
+    if (activeTab === "notifications") fetchNotifications();
   }, [activeTab]);
 
   const fetchMyStudents = async () => {
@@ -205,6 +246,20 @@ export default function FacultyDashboard() {
     }
   };
 
+  const fetchNotifications = async () => {
+    setNotificationsLoading(true);
+    try {
+      const res = await api.get("/api/notifications/my-notifications");
+      if (res.data.success) {
+        setNotifications(res.data.notifications);
+      }
+    } catch (err) {
+      toast.error("Failed to load notifications");
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
   const addStudent = async (studentId) => {
     try {
       const res = await api.post("/api/faculty/add-student", { studentId });
@@ -234,9 +289,57 @@ export default function FacultyDashboard() {
   const tabs = [
     { id: "counseling", label: "Counseling", icon: <Users size={18} /> },
     { id: "stress", label: "Stress Reports", icon: <Brain size={18} /> },
+    { id: "notifications", label: "Notifications", icon: <Bell size={18} /> },
     { id: "resources", label: "Resource Hub", icon: <Globe size={18} /> },
     { id: "complaints", label: "Queries", icon: <MessageSquare size={18} /> },
   ];
+
+  // Notification categorizer
+  const getCategorizedNotifications = () => {
+    const categories = {
+      stress: [],
+      attendance: [],
+      backlogs: [],
+      general: []
+    };
+
+    notifications.forEach(notif => {
+      // It's a risk alert from our AI system or Stress report system
+      if (notif.type === 'alert' || notif.type === 'intervention') {
+         const score = notif.details?.score || notif.details?.stressScore || 0;
+         const attendance = notif.details?.attendance;
+         const backlogs = notif.details?.backlogs;
+
+         let categorized = false;
+         
+         if (score >= 4) {
+           categories.stress.push(notif);
+           categorized = true;
+         }
+         if (attendance !== undefined && attendance < 75) {
+           categories.attendance.push(notif);
+           categorized = true;
+         }
+         if (backlogs !== undefined && backlogs > 0) {
+           categories.backlogs.push(notif);
+           categorized = true;
+         }
+
+         if (!categorized) {
+            categories.general.push(notif);
+         }
+      } else {
+        categories.general.push(notif);
+      }
+    });
+
+    // Remove duplicates if a notification falls into multiple categories (we just show it in the selected tab)
+    return categories;
+  };
+
+  const categorizedNotifs = getCategorizedNotifications();
+  // Depending on which sub-tab is selected, show those notifs
+  const displayNotifs = activeNotificationCategory === "all" ? notifications : categorizedNotifs[activeNotificationCategory];
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
@@ -385,6 +488,108 @@ export default function FacultyDashboard() {
                     </motion.button>
                   ))}
                 </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ── Notifications Tab ── */}
+          {activeTab === "notifications" && (
+            <motion.div key="notifications" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+              <div className="flex items-center gap-5 mb-12">
+                <div className="w-16 h-16 bg-gradient-to-tr from-rose-500 to-orange-500 rounded-[2rem] flex items-center justify-center">
+                  <Bell size={32} className="text-white" />
+                </div>
+                <div>
+                  <h1 className="text-4xl font-black tracking-tight">Alerts & Notifications</h1>
+                  <p className="text-slate-400 mt-1 text-lg">AI-powered proactive risk identification.</p>
+                </div>
+              </div>
+
+              {/* Sub-tabs for categorization */}
+              <div className="flex flex-wrap gap-3 mb-8">
+                 {[
+                   { id: "all", label: "All Alerts", border: "border-slate-500/20" },
+                   { id: "stress", label: "High Stress", border: "border-orange-500/30 text-orange-400", count: categorizedNotifs.stress.length },
+                   { id: "attendance", label: "Low Attendance", border: "border-rose-500/30 text-rose-400", count: categorizedNotifs.attendance.length },
+                   { id: "backlogs", label: "Active Backlogs", border: "border-indigo-500/30 text-indigo-400", count: categorizedNotifs.backlogs.length },
+                 ].map(cat => (
+                   <button 
+                     key={cat.id} 
+                     onClick={() => setActiveNotificationCategory(cat.id)}
+                     className={`px-5 py-2.5 rounded-full border text-sm font-bold flex items-center gap-2 transition-all ${
+                       activeNotificationCategory === cat.id 
+                         ? 'bg-white text-black border-white shadow-xl' 
+                         : `bg-white/5 hover:bg-white/10 ${cat.border || 'text-slate-300'}`
+                     }`}
+                   >
+                     {cat.label}
+                     {cat.count !== undefined && cat.count > 0 && (
+                       <span className={`px-2 py-0.5 rounded-full text-xs bg-black/20 ${activeNotificationCategory === cat.id ? 'text-black' : ''}`}>
+                         {cat.count}
+                       </span>
+                     )}
+                   </button>
+                 ))}
+              </div>
+
+              {notificationsLoading ? (
+                 <div className="text-center py-24 font-black text-slate-600 animate-pulse tracking-widest uppercase">Fetching Alerts...</div>
+              ) : displayNotifs.length === 0 ? (
+                 <div className="text-center py-24 bg-white/[0.02] border border-dashed border-white/10 rounded-[3rem]">
+                   <p className="text-slate-400 text-xl font-medium">No alerts found in this category.</p>
+                 </div>
+              ) : (
+                 <div className="space-y-4">
+                   {displayNotifs.map((notif, i) => (
+                      <motion.div key={notif._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                        className={`p-6 bg-white/[0.02] border rounded-[2rem] relative overflow-hidden ${
+                          notif.type === 'alert' ? 'border-orange-500/30' : 'border-white/10'
+                        }`}
+                      >
+                         {/* Urgent indicator strip */}
+                         {notif.type === 'alert' && (
+                           <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-rose-500 to-orange-500" />
+                         )}
+                         <div className="flex items-start justify-between mb-4">
+                           <div className="flex flex-col">
+                             <h3 className="text-xl font-black text-white">{notif.title}</h3>
+                             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">
+                               {new Date(notif.createdAt).toLocaleString()}
+                             </p>
+                           </div>
+                           {!notif.isRead && <span className="w-3 h-3 bg-rose-500 rounded-full animate-pulse" />}
+                         </div>
+                         
+                         <p className="text-slate-300 font-medium whitespace-pre-wrap leading-relaxed">{notif.message}</p>
+                         
+                         {/* Data Pills (if details exist) */}
+                         {notif.details && (
+                           <div className="mt-6 flex flex-wrap gap-2">
+                             {notif.details.rollNumber && (
+                               <span className="px-3 py-1 bg-white/[0.05] border border-white/10 rounded-lg text-xs font-bold text-slate-300">
+                                 Roll: {notif.details.rollNumber}
+                               </span>
+                             )}
+                             {(notif.details.score || notif.details.stressScore) && (
+                               <span className="px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs font-bold text-orange-400">
+                                 Stress: {Number(notif.details.score || notif.details.stressScore).toFixed(1)}/5.0
+                               </span>
+                             )}
+                             {notif.details.attendance !== undefined && (
+                               <span className={`px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-lg text-xs font-bold ${notif.details.attendance < 75 ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                 Attendance: {notif.details.attendance}%
+                               </span>
+                             )}
+                             {notif.details.backlogs !== undefined && (
+                               <span className={`px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-xs font-bold ${notif.details.backlogs > 0 ? 'text-indigo-400' : 'text-slate-300'}`}>
+                                 Backlogs: {notif.details.backlogs}
+                               </span>
+                             )}
+                           </div>
+                         )}
+                      </motion.div>
+                   ))}
+                 </div>
               )}
             </motion.div>
           )}
