@@ -11,6 +11,7 @@ import ResourceHub from "../components/ResourceHub";
 import StressAssessment from "../components/StressAssessment";
 import StressReport from "../components/StressReport";
 import StressChart from "../components/StressChart";
+import StressChatbot from "../components/StressChatbot";
 
 const TIER_COLORS = {
   'Minimal Stress': 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
@@ -276,6 +277,7 @@ export default function StudentDashboard() {
           )}
         </AnimatePresence>
       </main>
+      <StressChatbot />
     </div>
   );
 }

@@ -54,4 +54,40 @@ router.post('/generate-student-report', isLoggedIn, async (req, res) => {
     }
 });
 
+// Specialized endpoint for stress-relief chatbot
+router.post('/chatbot', isLoggedIn, async (req, res) => {
+    const { prompt, history } = req.body;
+
+    if (!prompt) {
+        return res.status(400).json({ message: "Message is required" });
+    }
+
+    const systemPrompt = `
+    You are a compassionate, supportive, and empathetic Stress-Relief Chatbot for students. 
+    Your primary goal is to provide emotional support, stress-relief techniques, and a safe space for students to express their feelings.
+    
+    CRITICAL INSTRUCTIONS:
+    1. EXCLUSIVE FOCUS: You must ONLY discuss topics related to stress, mental health, well-being, academic pressure, and emotional support.
+    2. REDIRECTION: If a student asks about unrelated topics (e.g., coding, history, science, sports, general knowledge), politely and gently redirect the conversation back to their well-being. Acknowledge the input as either positive or negative in tone, and then ask how they are feeling or if they'd like to discuss something that's on their mind.
+    3. TONE: Be warm, non-judgmental, and encouraging. Use "I understand," "It's okay to feel this way," and "I'm here for you."
+    4. TECHNIQUES: Suggest breathing exercises, grounding techniques (5-4-3-2-1), journaling, or taking short breaks when appropriate.
+    5. SAFETY: If a student expresses thoughts of self-harm or severe crisis, strongly urge them to contact a professional counselor, a trusted teacher, or a crisis hotline immediately.
+    
+    Student Input: "${prompt}"
+    
+    Previous Conversation History:
+    ${JSON.stringify(history || [])}
+    
+    Response:
+    `;
+
+    const result = await generateContent(systemPrompt, "gemini-flash-latest");
+
+    if (result.success) {
+        res.json({ success: true, text: result.text });
+    } else {
+        res.status(500).json({ success: false, message: "Chatbot service failed", error: result.error });
+    }
+});
+
 module.exports = router;
