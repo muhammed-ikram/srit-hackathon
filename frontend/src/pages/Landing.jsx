@@ -1,25 +1,49 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import Antigravity from '../components/Antigravity';
+
+/* ── Stress-management quotes for the marquee ticker ── */
+const TICKER_QUOTES = [
+  "\"Take a deep breath. You've got this.\"",
+  "\"Progress, not perfection.\"",
+  "\"Rest is not a reward — it's a requirement.\"",
+  "\"One step at a time builds the whole stairway.\"",
+  "\"Your well-being is your superpower.\"",
+  "\"Pause. Reflect. Recharge.\"",
+  "\"Stress is a signal, not a sentence.\"",
+  "\"Balance is the foundation of excellence.\"",
+  "\"Growth lives just outside your comfort zone.\"",
+  "\"Small wins compound into great victories.\"",
+  "\"A calm mind is your competitive advantage.\"",
+  "\"You cannot pour from an empty cup.\"",
+];
+
+/* Duplicate for seamless infinite loop */
+const DOUBLED = [...TICKER_QUOTES, ...TICKER_QUOTES];
+
+const Ticker = ({ reverse = false, speed = 60 }) => (
+  <div className="overflow-hidden w-full">
+    <div
+      className={`flex gap-16 whitespace-nowrap w-max ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'}`}
+      style={{ animationDuration: `${speed}s` }}
+    >
+      {DOUBLED.map((q, i) => (
+        <span
+          key={i}
+          className="text-sm font-semibold tracking-widest uppercase text-slate-400 flex items-center gap-6"
+        >
+          {q}
+          <span className="w-2 h-2 rounded-full bg-indigo-500/60 inline-block" />
+        </span>
+      ))}
+    </div>
+  </div>
+);
 
 const Landing = () => {
   const navigate = useNavigate();
-
-  const quotes = [
-    {
-      text: "Education is the most powerful weapon which you can use to change the world.",
-      author: "Nelson Mandela"
-    },
-    {
-      text: "The beautiful thing about learning is that no one can take it away from you.",
-      author: "B.B. King"
-    },
-    {
-      text: "Empowering campuses, guarding futures. CampusGuardian AI is the next step in educational excellence.",
-      author: "CampusGuardian AI"
-    }
-  ];
 
   const features = [
     {
@@ -39,45 +63,144 @@ const Landing = () => {
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center p-6 relative overflow-x-hidden font-sans">
-      {/* Background Decorative Blurs */}
-      <div className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-600/20 blur-[150px] rounded-full animate-pulse pointer-events-none" />
-      <div className="fixed bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/20 blur-[150px] rounded-full animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
-      <div className="fixed top-[30%] left-[40%] w-[30%] h-[30%] bg-cyan-500/10 blur-[120px] rounded-full pointer-events-none" />
+  const stressQuotes = [
+    {
+      text: "In the middle of difficulty lies opportunity.",
+      author: "Albert Einstein"
+    },
+    {
+      text: "Do not anticipate trouble, or worry about what may never happen. Keep in the sunlight.",
+      author: "Benjamin Franklin"
+    },
+    {
+      text: "You don't have to control your thoughts. You just have to stop letting them control you.",
+      author: "Dan Millman"
+    },
+    {
+      text: "Stress is the gap between how things are and how we think they should be.",
+      author: "Unknown"
+    },
+    {
+      text: "Almost everything will work again if you unplug it for a few minutes — including you.",
+      author: "Anne Lamott"
+    },
+    {
+      text: "Your calm is your power. Protect it fiercely.",
+      author: "CampusGuardian AI"
+    },
+  ];
 
-      {/* Grid Pattern Overlay */}
-      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none" style={{
-        backgroundImage: 'radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px)',
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center relative overflow-x-hidden font-sans" style={{ padding: 0 }}>
+
+      {/* ── CSS Keyframes injected via a style tag ── */}
+      <style>{`
+        @keyframes marquee {
+          0%   { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-reverse {
+          0%   { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+        .animate-marquee {
+          animation: marquee linear infinite;
+        }
+        .animate-marquee-reverse {
+          animation: marquee-reverse linear infinite;
+        }
+      `}</style>
+
+      {/* ── Antigravity Particle Background ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+        <Suspense fallback={null}>
+          <Antigravity
+            count={500}
+            magnetRadius={12}
+            ringRadius={5}
+            waveSpeed={0.4}
+            waveAmplitude={1}
+            particleSize={1.5}
+            lerpSpeed={0.05}
+            color="#5555ff"
+            autoAnimate
+            particleVariance={1}
+            rotationSpeed={0}
+            depthFactor={1}
+            pulseSpeed={3}
+            particleShape="sphere"
+            fieldStrength={10}
+          />
+        </Suspense>
+      </div>
+
+      {/* Dark overlay */}
+      <div className="fixed inset-0 z-[1] pointer-events-none bg-black/50" />
+
+      {/* Ambient blobs */}
+      <div className="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-600/10 blur-[150px] rounded-full animate-pulse pointer-events-none z-[1]" />
+      <div className="fixed bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-purple-600/10 blur-[150px] rounded-full animate-pulse pointer-events-none z-[1]" style={{ animationDelay: '2s' }} />
+
+      {/* Grid */}
+      <div className="fixed inset-0 z-[1] opacity-[0.07] pointer-events-none" style={{
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px)',
         backgroundSize: '80px 80px'
       }} />
 
-      {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center relative z-10 w-full max-w-7xl pt-24 pb-48 px-8 sm:px-12 md:px-16">
+      {/* ═══════════════════════════════════
+          TOP TICKER BAND
+      ════════════════════════════════════ */}
+      <div className="w-full z-10 overflow-hidden border-b border-white/5 bg-white/[0.02] py-5 space-y-4">
+        <Ticker speed={80} />
+        <Ticker reverse speed={70} />
+      </div>
+
+      {/* ═══════════════════════════════════
+          HERO
+      ════════════════════════════════════ */}
+      <section className="min-h-screen flex flex-col items-center justify-center relative z-10 w-full max-w-7xl pt-24 pb-40 px-8 sm:px-12 md:px-16">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="text-center px-4"
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
+            transition={{ delay: 0.3, duration: 0.9 }}
             className="inline-block px-6 py-2 mb-12 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-sm font-bold tracking-[0.3em] uppercase text-indigo-400"
           >
             The Future of Campus Intelligence
           </motion.div>
 
-          <h1 className="text-6xl md:text-9xl font-black mb-10 tracking-tighter leading-[0.85] text-white">
-            Campus<br /><span className="bg-gradient-to-tr from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent italic">Guardian</span> AI
-          </h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 1.1 }}
+            className="text-6xl md:text-9xl font-black mb-10 tracking-tighter leading-[0.85] text-white"
+          >
+            Campus<br />
+            <span className="bg-gradient-to-tr from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent italic">
+              Guardian
+            </span>{' '}AI
+          </motion.h1>
 
-          <p className="max-w-3xl mx-auto text-xl md:text-2xl text-slate-400 mb-16 font-medium leading-relaxed tracking-tight">
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8, duration: 1 }}
+            className="max-w-3xl mx-auto text-xl md:text-2xl text-slate-400 mb-16 font-medium leading-relaxed tracking-tight"
+          >
             Empowering educational institutions with AI-driven performance tracking, integrated counseling, and seamless resource management.
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row gap-8 justify-center items-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1, duration: 0.8 }}
+            className="flex flex-col sm:flex-row gap-8 justify-center items-center"
+          >
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -90,60 +213,99 @@ const Landing = () => {
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.05, background: "rgba(255,255,255,0.1)" }}
+              whileHover={{ scale: 1.05, background: 'rgba(255,255,255,0.1)' }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/login')}
               className="px-12 py-6 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl font-bold text-2xl transition-all"
             >
               Portal Access
             </motion.button>
-          </div>
+          </motion.div>
         </motion.div>
       </section>
 
-      {/* Quotes Section */}
-      <section className="w-full max-w-[90rem] py-48 z-10 px-8 sm:px-12 md:px-24">
-        <div className="text-center mb-24">
-          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Philosophy of Excellence</h2>
-          <div className="w-24 h-1 bg-indigo-500 mx-auto rounded-full" />
-        </div>
-        <div className="grid md:grid-cols-3 gap-12">
-          {quotes.map((quote, idx) => (
+      {/* ═══════════════════════════════════
+          TICKER BAND — top row left→right
+      ════════════════════════════════════ */}
+      <div className="w-full z-10 overflow-hidden border-y border-white/5 bg-white/[0.02] py-5 space-y-4">
+        <Ticker speed={80} />
+        <Ticker reverse speed={70} />
+      </div>
+
+      {/* ═══════════════════════════════════
+          STRESS MANAGEMENT QUOTES
+      ════════════════════════════════════ */}
+      <section className="w-full max-w-[90rem] py-40 z-10 px-8 sm:px-12 md:px-24">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-24"
+        >
+          <p className="text-indigo-400 text-xs font-black tracking-[0.5em] uppercase mb-4">Well-being First</p>
+          <h2 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">Your Mind Matters</h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto rounded-full" />
+          <p className="text-slate-400 text-xl mt-8 max-w-2xl mx-auto font-medium leading-relaxed">
+            CampusGuardian AI is built not just for academic performance — but to actively support the mental wellness of every student.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+          {stressQuotes.map((quote, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ delay: 0.2 * idx, duration: 0.8 }}
-              className="p-12 bg-white/[0.02] backdrop-blur-3xl border border-white/[0.05] rounded-[3rem] relative group transition-all hover:bg-white/[0.04] hover:border-indigo-500/30"
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ delay: idx * 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              className="relative p-10 bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] rounded-[2.5rem] group hover:border-indigo-500/30 hover:bg-white/[0.04] transition-all duration-500"
             >
-              <div className="text-7xl text-indigo-500/10 absolute top-8 left-8 font-serif group-hover:text-indigo-500/20 transition-colors">"</div>
-              <p className="text-2xl text-slate-300 italic mb-10 relative z-10 font-light leading-relaxed">
+              <div className="absolute -inset-px rounded-[2.5rem] bg-gradient-to-br from-indigo-500/10 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="text-7xl text-indigo-500/15 absolute top-6 left-8 font-serif group-hover:text-indigo-500/30 transition-colors duration-300 select-none">"</div>
+              <p className="text-xl text-slate-300 italic mb-8 relative z-10 font-light leading-relaxed pt-4">
                 {quote.text}
               </p>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-[1px] bg-indigo-500" />
-                <p className="text-indigo-400 font-bold text-sm tracking-widest uppercase">{quote.author}</p>
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="w-8 h-[1px] bg-indigo-500" />
+                <p className="text-indigo-400 font-bold text-xs tracking-widest uppercase">{quote.author}</p>
               </div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="w-full max-w-[90rem] py-48 z-10 px-8 sm:px-12 md:px-24">
-        <div className="text-center mb-24">
+      {/* ═══════════════════════════════════
+          SECOND TICKER between sections
+      ════════════════════════════════════ */}
+      <div className="w-full z-10 overflow-hidden border-y border-white/5 bg-white/[0.02] py-5">
+        <Ticker speed={90} />
+      </div>
+
+      {/* ═══════════════════════════════════
+          FEATURES
+      ════════════════════════════════════ */}
+      <section className="w-full max-w-[90rem] py-40 z-10 px-8 sm:px-12 md:px-24">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-24"
+        >
+          <p className="text-purple-400 text-xs font-black tracking-[0.5em] uppercase mb-4">Platform Overview</p>
           <h2 className="text-4xl md:text-5xl font-black text-white mb-4">Core Ecosystem</h2>
           <div className="w-24 h-1 bg-purple-500 mx-auto rounded-full" />
-        </div>
+        </motion.div>
         <div className="grid md:grid-cols-3 gap-16">
           {features.map((feature, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ delay: 0.2 * idx }}
+              initial={{ opacity: 0, x: idx === 0 ? -60 : idx === 2 ? 60 : 0, y: idx === 1 ? 60 : 0 }}
+              whileInView={{ opacity: 1, x: 0, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ delay: 0.15 * idx, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="group relative"
             >
               <div className="absolute -inset-8 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 rounded-[4rem] blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -159,27 +321,36 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Bottom CTA */}
-      <section className="w-full max-w-5xl py-60 z-10 px-4 text-center">
+      {/* ═══════════════════════════════════
+          BOTTOM CTA
+      ════════════════════════════════════ */}
+      <section className="w-full max-w-5xl py-48 z-10 px-4 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
           className="p-20 bg-gradient-to-b from-indigo-600/10 to-transparent rounded-[4rem] border border-white/10 backdrop-blur-xl"
         >
-          <h2 className="text-5xl md:text-7xl font-black mb-12 text-white leading-tight">Join the Next Generation of <br />Higher Education</h2>
+          <h2 className="text-5xl md:text-7xl font-black mb-12 text-white leading-tight">
+            Join the Next Generation of <br />Higher Education
+          </h2>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/register')}
-              className="px-16 py-7 bg-white text-black rounded-[2rem] font-black text-2xl hover:scale-105 hover:shadow-2xl transition-all active:scale-95 shadow-white/20 shadow-lg"
+              className="px-16 py-7 bg-white text-black rounded-[2rem] font-black text-2xl hover:shadow-2xl transition-all shadow-white/20 shadow-lg"
             >
               Get Early Access
-            </button>
+            </motion.button>
           </div>
         </motion.div>
       </section>
 
-      {/* Footer */}
+      {/* ═══════════════════════════════════
+          FOOTER
+      ════════════════════════════════════ */}
       <footer className="w-full max-w-7xl border-t border-white/5 py-12 px-6 flex flex-col md:flex-row justify-between items-center gap-6 z-10 mt-auto">
         <div className="text-white font-black text-xl tracking-tighter">
           Campus<span className="text-indigo-500">Guardian</span> AI
