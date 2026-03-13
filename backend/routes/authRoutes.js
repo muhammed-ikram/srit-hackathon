@@ -33,7 +33,9 @@ router.post('/register', async (req, res) => {
 
   res.cookie('token', token, {
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
   });
   res.status(201).json({ success: true, isRegistrationComplete: false });
 });
@@ -76,7 +78,9 @@ router.post('/login', async (req, res) => {
   );
   res.cookie("token", token, {
     httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24
+    maxAge: 1000 * 60 * 60 * 24,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
   });
 
   // Send login email
@@ -106,7 +110,9 @@ router.get(
   (req, res) => {
     res.cookie("token", req.user.token, {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24
+      maxAge: 1000 * 60 * 60 * 24,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production'
     });
 
     if (!req.user.isRegistrationComplete) {
@@ -135,9 +141,17 @@ router.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
-router.get('/me', isLoggedIn, async (req, res) => {
-  const user = await userModel.findById(req.user.id);
-  res.json(user);
+router.get('/me', async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.json(null);
+
+  try {
+    const data = jwt.verify(token, "secretkey");
+    const user = await userModel.findById(data.id);
+    res.json(user);
+  } catch (err) {
+    res.json(null);
+  }
 });
 
 module.exports = router;

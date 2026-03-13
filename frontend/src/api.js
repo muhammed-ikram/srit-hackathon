@@ -10,12 +10,19 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.message || "An unexpected error occurred system-wide.";
-    toast.error(message);
+    const isCheckAuth = error.config?.url?.includes("auth/me");
+    if (isCheckAuth) return Promise.resolve({ data: null });
 
-    // Redirect if unauthorized
+    const message = error.response?.data?.message || "An unexpected error occurred system-wide.";
+    
+    // Only redirect if unauthorized and NOT already on auth pages
     if (error.response?.status === 401) {
-      window.location.href = "/";
+      if (window.location.pathname !== "/" && window.location.pathname !== "/login" && window.location.pathname !== "/register") {
+        toast.error("Session expired. Please login again.");
+        window.location.href = "/";
+      }
+    } else {
+      toast.error(message);
     }
 
     return Promise.reject(error);
