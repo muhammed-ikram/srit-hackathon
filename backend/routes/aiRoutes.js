@@ -23,6 +23,7 @@ router.post('/generate', isLoggedIn, async (req, res) => {
 // Specialized endpoint for faculty to analyze student data
 router.post('/generate-student-report', isLoggedIn, async (req, res) => {
     const { studentName, attendance, performanceData, additionalInfo } = req.body;
+    console.log(`[ROUTER] Student Report requested for: ${studentName}`);
 
     if (!studentName || !attendance || !performanceData) {
         return res.status(400).json({ message: "Student information, attendance, and performance data are required." });
@@ -43,7 +44,7 @@ router.post('/generate-student-report', isLoggedIn, async (req, res) => {
     Format the output as a professional report with a clear "Risk Level" section.
     `;
 
-    const result = await generateContent(prompt, "gemini-1.5-flash");
+    const result = await generateContent(prompt, "gemini-flash-latest");
 
     if (result.success) {
         // Extract a simple risk level for easy frontend parsing if possible, or just send the text

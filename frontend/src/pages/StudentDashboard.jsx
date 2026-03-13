@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Calendar, MapPin, Clock, User, CheckCircle, Info } from "lucide-react";
+import { Bell, Calendar, MapPin, Clock, User, CheckCircle, Info, MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
+import ComplaintSection from "../components/ComplaintSection";
 
 export default function StudentDashboard() {
   const [notifications, setNotifications] = useState([]);
@@ -114,6 +115,10 @@ export default function StudentDashboard() {
           </div>
         )}
       </main>
+
+      <section className="max-w-4xl mx-auto mt-24 mb-24">
+          <ComplaintSection />
+      </section>
     </div>
   );
 }

@@ -3,13 +3,14 @@ import { AuthContext } from "../context/authContext";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { motion } from "framer-motion";
-import { LogOut, User, Zap, Activity, Shield, Layout } from "lucide-react";
+import { Shield, Layout, LogOut, MessageSquare } from "lucide-react";
+import ComplaintSection from "../components/ComplaintSection";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Home = () => {
+const Home = ({ role }) => {
     const { user, loading, setUser } = useContext(AuthContext);
     const navigate = useNavigate();
 
@@ -166,6 +167,10 @@ const Home = () => {
                     <button className="btn-primary">Initiate Build Sequence</button>
                 </motion.div>
 
+            </div>
+
+            <div className="mt-20 pt-20 border-t border-white/5">
+                <ComplaintSection />
             </div>
         </div>
     );

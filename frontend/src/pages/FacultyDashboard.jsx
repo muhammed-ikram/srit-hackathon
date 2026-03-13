@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import StudentCard from "../components/StudentCard";
 import AIReportModal from "../components/AIReportModal";
 import ScheduleIntervention from "../components/ScheduleIntervention";
+import ComplaintSection from "../components/ComplaintSection";
 
 export default function FacultyDashboard() {
   const [students, setStudents] = useState([]);
@@ -138,6 +139,10 @@ export default function FacultyDashboard() {
                 ))}
             </div>
         )}
+      </section>
+
+      <section className="max-w-7xl mx-auto mt-32 mb-24 border-t border-white/5 pt-32">
+          <ComplaintSection />
       </section>
 
       {/* Add Student Modal */}
