@@ -11,6 +11,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const facultyRoutes = require('./routes/facultyRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
+const resourceRoutes = require('./routes/resourceRoutes');
 
 const app = express();
 // app.use(cors());
@@ -29,6 +30,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/complaints", complaintRoutes);
+app.use("/api/resources", resourceRoutes);
 
 
 

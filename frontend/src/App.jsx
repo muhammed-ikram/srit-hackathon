@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import FacultyDashboard from "./pages/FacultyDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import HostelDashboard from "./pages/HostelDashboard";
+import ManagementDashboard from "./pages/ManagementDashboard";
 import { AuthProvider } from "./context/authContext";
 import Background3D from "./components/Background3D";
 import CursorFollower from "./components/CursorFollower";
@@ -30,8 +31,8 @@ export default function App() {
           <Route path="/dashboard/faculty" element={<FacultyDashboard />} />
           <Route path="/dashboard/counselor" element={<FacultyDashboard />} />
           <Route path="/dashboard/hod" element={<Home role="hod" />} />
-          <Route path="/dashboard/librarian" element={<Home role="librarian" />} />
-          <Route path="/dashboard/lab-technician" element={<Home role="lab_technician" />} />
+          <Route path="/dashboard/librarian" element={<ManagementDashboard role="librarian" />} />
+          <Route path="/dashboard/lab-technician" element={<ManagementDashboard role="lab_technician" />} />
           <Route path="/dashboard/hostel" element={<HostelDashboard />} />
           <Route path="/dashboard/admin" element={<Home role="admin" />} />
         </Routes>

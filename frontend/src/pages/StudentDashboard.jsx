@@ -1,13 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import api from "../api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Calendar, MapPin, Clock, User, CheckCircle, Info, MessageSquare } from "lucide-react";
+import { Bell, Calendar, Clock, CheckCircle, Info, MessageSquare, Activity, Globe } from "lucide-react";
+import { AuthContext } from "../context/authContext";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import ComplaintSection from "../components/ComplaintSection";
+import DashboardNavbar from "../components/DashboardNavbar";
+import ResourceHub from "../components/ResourceHub";
 
 export default function StudentDashboard() {
+  const { user, loading: authLoading } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("activity");
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
     fetchNotifications();
@@ -28,97 +42,119 @@ export default function StudentDashboard() {
     try {
       await api.patch(`/api/notifications/read/${id}`);
       setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
-    } catch (err) {}
+    } catch (err) {
+      toast.error("Error updating status");
+    }
   };
 
+  if (authLoading) {
+    return (
+      <div className="h-screen bg-black flex items-center justify-center">
+        <div className="font-black text-slate-700 tracking-[0.5em] animate-pulse uppercase">Linking Channels...</div>
+      </div>
+    );
+  }
+
+  const tabs = [
+    { id: "activity", label: "Activity", icon: <Activity size={18} /> },
+    { id: "resources", label: "Resource Hub", icon: <Globe size={18} /> },
+    { id: "complaints", label: "Queries", icon: <MessageSquare size={18} /> }
+  ];
+
   return (
-    <div className="min-h-screen bg-black text-white p-8 md:p-12">
-      <header className="max-w-4xl mx-auto mb-16">
-        <h1 className="text-4xl md:text-5xl font-black mb-2 tracking-tight">Student Portal</h1>
-        <p className="text-slate-400 text-lg font-medium">View your academic alerts and scheduled counseling.</p>
-      </header>
+    <div className="min-h-screen bg-black text-white p-8">
+      <DashboardNavbar activeTab={activeTab} setActiveTab={setActiveTab} tabs={tabs} />
 
-      <main className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-black flex items-center gap-3">
-            <Bell className="text-purple-500" /> Notifications & Intervention
-          </h2>
-          <span className="px-4 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold uppercase tracking-widest text-slate-500">
-            {notifications.filter(n => !n.isRead).length} New
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-20 text-slate-500 font-bold tracking-widest">CONNECTING TO GUARDIAN...</div>
-        ) : notifications.length === 0 ? (
-          <div className="text-center py-24 bg-white/[0.02] border border-dashed border-white/10 rounded-[3rem]">
-            <p className="text-slate-500 text-xl font-medium">No system alerts at this time.</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {notifications.map((note) => (
-              <motion.div
-                key={note._id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className={`p-8 rounded-[2.5rem] border transition-all relative overflow-hidden group ${
-                  note.isRead ? 'bg-white/[0.02] border-white/5 opacity-60' : 'bg-white/[0.04] border-purple-500/30 shadow-xl shadow-purple-500/5'
-                }`}
-              >
-                {!note.isRead && (
-                  <div className="absolute top-0 left-0 w-2 h-full bg-purple-500" />
-                )}
-                
-                <div className="flex flex-col md:flex-row justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className={`p-2 rounded-lg ${note.type === 'intervention' ? 'bg-purple-500/10 text-purple-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                        {note.type === 'intervention' ? <Calendar size={20} /> : <Info size={20} />}
-                      </div>
-                      <span className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">
-                        {note.type} • From {note.sender?.username || "Faculty"}
-                      </span>
-                    </div>
-                    <h3 className="text-2xl font-black mb-4">{note.title}</h3>
-                    <p className="text-slate-300 text-lg leading-relaxed mb-8">
-                      {note.message}
-                    </p>
-
-                    {note.details && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3 text-sm text-slate-400 font-medium">
-                          <Calendar size={16} className="text-purple-400" /> {note.details.scheduledDate}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-slate-400 font-medium">
-                          <Clock size={16} className="text-purple-400" /> {note.details.scheduledTime}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-slate-400 font-medium col-span-full">
-                          <MapPin size={16} className="text-purple-400" /> {note.details.location}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex md:flex-col justify-end gap-3">
-                    {!note.isRead && (
-                      <button 
-                        onClick={() => markAsRead(note._id)}
-                        className="px-6 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all text-sm flex items-center gap-2"
-                      >
-                        <CheckCircle size={18} /> Acknowledge
-                      </button>
-                    )}
-                  </div>
+      <main className="max-w-7xl mx-auto py-10">
+        <AnimatePresence mode="wait">
+          {activeTab === "activity" && (
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-12"
+            >
+              <div className="flex items-center gap-6 mb-12">
+                <div className="w-16 h-16 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-[2rem] flex items-center justify-center shadow-2xl shadow-indigo-500/20">
+                  <Bell size={32} className="text-white" />
                 </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </main>
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 italic">Student Hub</h1>
+                  <p className="text-slate-400 font-medium text-lg">Your academic heartbeat and alerts.</p>
+                </div>
+              </div>
 
-      <section className="max-w-4xl mx-auto mt-24 mb-24">
-          <ComplaintSection />
-      </section>
+              {loading ? (
+                <div className="text-center py-24 font-black text-slate-600 tracking-widest animate-pulse uppercase">Syncing Neural Link...</div>
+              ) : notifications.length === 0 ? (
+                <div className="text-center py-32 bg-white/[0.02] border border-dashed border-white/10 rounded-[3rem]">
+                  <p className="text-slate-500 text-xl font-medium">Clear skies! No new notifications.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {notifications.map((n) => (
+                    <motion.div
+                      key={n._id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className={`relative p-8 rounded-[2.5rem] border transition-all hover:scale-[1.02] group ${
+                        n.isRead ? 'bg-white/[0.02] border-white/5 opacity-60' : 'bg-white/[0.05] border-indigo-500/30'
+                      }`}
+                    >
+                      {!n.isRead && <div className="absolute top-8 right-8 w-3 h-3 bg-indigo-500 rounded-full animate-ping" />}
+                      <div className="flex items-start gap-6">
+                        <div className={`p-4 rounded-2xl ${n.type === 'intervention' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
+                          {n.type === 'intervention' ? <Calendar size={28} /> : <Info size={28} />}
+                        </div>
+                        <div className="flex-1 space-y-4">
+                          <div>
+                            <h3 className="text-2xl font-black mb-1 leading-tight">{n.title}</h3>
+                            <p className="text-slate-400 font-medium leading-relaxed">{n.message}</p>
+                          </div>
+
+                          {n.details && (
+                            <div className="p-5 bg-black/40 rounded-2xl border border-white/5 space-y-3">
+                              <div className="flex items-center gap-2 text-indigo-400 text-xs font-black uppercase tracking-widest leading-none">
+                                <Clock size={14} /> Schedule Details
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <span className="text-sm font-bold text-white leading-none">{n.details.scheduledDate}</span>
+                                <span className="text-sm font-bold text-slate-400 leading-none">{n.details.scheduledTime}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {!n.isRead && (
+                            <button
+                              onClick={() => markAsRead(n._id)}
+                              className="flex items-center gap-2 text-indigo-400 hover:text-white transition-colors text-sm font-black uppercase tracking-widest pl-1"
+                            >
+                              <CheckCircle size={16} /> Acknowledge
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === "resources" && (
+            <motion.div key="resources" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <ResourceHub />
+            </motion.div>
+          )}
+
+          {activeTab === "complaints" && (
+            <motion.div key="complaints" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <ComplaintSection />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
